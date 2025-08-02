@@ -1,3 +1,4 @@
 type,category,amount
-deposit,Salary,20000.0
-expense,Groceries,1000.0
+expense,I bought a pen for 10 taka,10.0
+expense,I bought a cow for 3000 taka,3000.0
+deposit,I deposit 1000 taka,1000.0
