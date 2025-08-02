@@ -1,4 +1,4 @@
-type,category,amount
-expense,I bought a pen for 10 taka,10.0
-expense,I bought a cow for 3000 taka,3000.0
-deposit,I deposit 1000 taka,1000.0
+type,               category,                                       amount,        date         
+
+2025-08-03,expense,Buy a pen for 30 taka,30.0
+2025-08-03 05:44:07,expense,I bought a pen for 20 taka,20.0

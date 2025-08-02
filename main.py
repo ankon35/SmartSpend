@@ -1,3 +1,5 @@
+
+
 import os
 import json
 import csv
@@ -8,6 +10,7 @@ from collections import defaultdict
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.exceptions import OutputParserException
+from datetime import datetime  # Import datetime module
 
 # Load environment variables
 load_dotenv()
@@ -18,13 +21,14 @@ if not GOOGLE_API_KEY:
 DATA_FILE = 'financial_data.csv'
 
 def save_data_to_csv(entry_type: str, category: str, amount: float):
-    """Save transaction with original text as category"""
+    """Save transaction with original text as category, along with timestamp"""
     file_exists = os.path.isfile(DATA_FILE)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Get the current date and time
     with open(DATA_FILE, 'a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['type', 'category', 'amount'])
-        writer.writerow([entry_type, category.strip(), amount])
+            writer.writerow(['timestamp', 'type', 'category', 'amount'])  # Add 'timestamp' column
+        writer.writerow([timestamp, entry_type, category.strip(), amount])  # Write the timestamp along with other data
 
 def load_data_from_csv() -> Dict[str, Any]:
     """Load data preserving original categories"""
@@ -36,9 +40,9 @@ def load_data_from_csv() -> Dict[str, Any]:
         reader = csv.reader(file)
         header = next(reader, None)
         for row in reader:
-            if len(row) != 3:
+            if len(row) != 4:  # Adjusting to 4 fields now (timestamp, type, category, amount)
                 continue
-            entry_type, category, amount = row
+            timestamp, entry_type, category, amount = row
             try:
                 if entry_type == 'expense':
                     data['expenses'][category] += float(amount)
@@ -74,7 +78,7 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.2, goo
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", """You're a financial assistant. Analyze this data:
 {data}
-Provide specific insights using the exact category names from the data."""),
+Provide specific insights using the exact category names from the data."""), 
     ("human", "{query}")
 ])
 
@@ -104,7 +108,7 @@ def analyze_finances(query: str, data: Dict) -> str:
 
 def main():
     print("Financial Assistant (Preserves Exact Transaction Text)")
-    
+
     while True:
         print("\n1. Add Transaction\n2. Ask Question\n3. Exit")
         choice = input("Choose (1-3): ").strip()
