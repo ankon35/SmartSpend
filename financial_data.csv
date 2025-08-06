@@ -1,9 +1,0 @@
-date, type,               category,                                       amount,                 
-
-2025-08-03,expense,Buy a pen for 30 taka,30.0
-2025-08-03 05:44:07,expense,I bought a pen for 20 taka,20.0
-2025-08-03 05:54:37,deposit,I deposit,200.0
-2025-08-03 06:04:38,deposit,I deposit 100 taka,100.0
-2025-08-03 06:42:16,expense,I bough a pen for 20 taka,20.0
-2025-08-03 06:55:26,expense,I bought a pen for 20 taka,20.0
-2025-08-03 06:55:55,deposit,I deposit 200 taka,200.0

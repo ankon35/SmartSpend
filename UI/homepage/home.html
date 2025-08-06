@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Assistant</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Financial Assistant</h1>
+            <p class="subtitle">Track and analyze your expenses and deposits</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card balance-card">
+            <h2>Current Balance</h2>
+            <div class="balance-amount" id="balanceAmount">$0.00</div>
+            <div class="balance-details">
+                <p>Total Deposits: <span id="totalDeposits">$0.00</span></p>
+                <p>Total Expenses: <span id="totalExpenses">$0.00</span></p>
+            </div>
+        </div>
+
+        <div class="message bot-message">Hello! Please select an option to get started:</div>
+
+        <div class="options-container">
+            <button class="option-btn" data-option="add-transaction">Add Transaction</button>
+            <button class="option-btn" data-option="financial-analysis">Financial Analysis</button>
+            <button class="option-btn" data-option="expense-breakdown">Expense Breakdown</button>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message here...">
+            <button id="sendBtn">Send</button>
+        </div>
+        <div class="spinner" id="chatSpinner"></div>
+        <div class="error-message" id="chatError"></div>
+    </div>
+
+    <script src="home.js"></script>
+</body>
+</html>
