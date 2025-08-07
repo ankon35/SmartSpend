@@ -1,7 +1,8 @@
-# financial_api.py
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from flask import Flask, request, jsonify
 import os
 import json
@@ -12,6 +13,8 @@ from dotenv import load_dotenv
 from collections import defaultdict
 from datetime import datetime
 from pydantic import BaseModel
+import threading
+import uvicorn
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +23,14 @@ if not GOOGLE_API_KEY:
     raise ValueError("Google API key missing. Set GOOGLE_API_KEY in .env")
 
 DATA_FILE = 'financial_data.csv'
+
+
+# Jinja2 template setup for HTML rendering
+templates = Jinja2Templates(directory="templates")
+
+# Static files setup for serving CSS and JS
+
+
 
 # Shared functions (same as in your original code)
 def save_data_to_csv(entry_type: str, category: str, amount: float):
@@ -91,6 +102,18 @@ app_fastapi.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app_fastapi.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+
+@app_fastapi.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """Render the homepage"""
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 @app_fastapi.post("/add-transaction")
 async def add_transaction(transaction: Transaction):

@@ -1,0 +1,6 @@
+timestamp,type,category,amount
+2025-08-08 03:33:00,expense,I spent $50 on groceries,50.0
+2025-08-08 03:33:51,expense,I spent $50 on groceries,50.0
+2025-08-08 03:34:31,expense,I spent $50 on groceries,50.0
+2025-08-08 03:34:41,expense,I spent $50 on groceries,50.0
+2025-08-08 03:51:17,deposit,I received $2000 salary,2000.0
