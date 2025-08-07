@@ -1,7 +1,7 @@
 // Configuration
 // const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
 
-const API_BASE_URL = 'https://smartspend-7w42.onrender.com/'; //Live Host api
+const API_BASE_URL = 'https://smartspend-7w42.onrender.com'; //Live Host api
 
 // const API_BASE_URL = 'http://localhost:5000'; // Flask default
 
