@@ -20,7 +20,7 @@ body {
     background-color: #f5f7fa;
     color: var(--dark-color);
     line-height: 1.6;
-    padding-bottom: 120px;
+    padding-bottom: 20px;
 }
 
 .container {
@@ -118,7 +118,7 @@ h1 {
 }
 
 .chat-container {
-    position: fixed;
+    position: relative;
     bottom: 0;
     left: 0;
     right: 0;
@@ -262,4 +262,44 @@ h1 {
 @keyframes message-in-left {
     0% { opacity: 0; transform: translateX(-20px); }
     100% { opacity: 1; transform: translateX(0); }
+}
+
+
+@media (max-width: 480px) {
+
+    header{
+        margin-bottom: 0;
+    }
+
+    .options-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 5px;
+        margin: 30px 0;
+    }
+
+    .bot-message {
+        width: 95%;
+        font-size: 9px;  /* Smaller font size for very small screens */
+        padding: 10px;
+    }
+
+    .option-btn {
+        padding: 6px 3px;  /* Slightly smaller padding on very small devices */
+        font-size: 0.9rem;          /* Buttons are wider on very small screens */
+        width: 100px;
+    }
+    .hero-title{
+        font-size: 1.5rem;
+    }
+    #chatInput{
+        width: 100px;
+        font-size: small;
+ 
+    }
+
+    .bot-message1{
+        margin-bottom: 20px;
+    }
 }
