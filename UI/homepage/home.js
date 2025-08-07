@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
+const API_BASE_URL = 'https://smartspend-rhgs.onrender.com'; // FastAPI default
 // const API_BASE_URL = 'http://localhost:5000'; // Flask default
 
 // DOM Elements
