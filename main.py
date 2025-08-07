@@ -75,12 +75,32 @@ def parse_transaction(text: str) -> Tuple[str, str, float]:
 # LLM Setup
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.2, google_api_key=GOOGLE_API_KEY)
 
+# analysis_prompt = ChatPromptTemplate.from_messages([
+#     ("system", """You're a financial assistant. Analyze this data:
+# {data}
+# Provide specific insights using the exact category names from the data."""), 
+#     ("human", "{query}")
+# ])
+
+
 analysis_prompt = ChatPromptTemplate.from_messages([
     ("system", """You're a financial assistant. Analyze this data:
 {data}
-Provide specific insights using the exact category names from the data."""), 
+Provide specific insights using the exact category names from the data.
+Ensure that the output is formatted clearly and is easy to understand, like this:
+
+1. **Total Deposits:** You have a total of $22,200.0 in deposits. 
+
+2. **Primary Source of Deposits:** The majority of your deposits come from 'salary,' with a significant portion of that being a single large deposit of $20,000.0.
+
+3. **Frequency of Smaller Deposits:** You have received multiple smaller 'salary' deposits of $200.0 each.
+
+Each section should be clearly numbered and labeled, and follow a similar structure for consistency."""), 
     ("human", "{query}")
 ])
+
+
+
 
 def analyze_finances(query: str, data: Dict) -> str:
     """Get financial insights using exact categories"""

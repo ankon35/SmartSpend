@@ -92,7 +92,10 @@ async function processMessage() {
         return;
     }
     
-    chatSpinner.style.display = 'block';
+    // Show the spinner once Send button is clicked
+    const spinner = document.querySelector('.spinner');
+    spinner.style.display = 'inline-block'; // Show the spinner
+
     chatError.style.display = 'none';
     
     try {
@@ -111,7 +114,7 @@ async function processMessage() {
         chatError.style.display = 'block';
         chatError.textContent = error.message;
     } finally {
-        chatSpinner.style.display = 'none';
+        spinner.style.display = 'none'; // Hide the spinner when response is received
     }
 }
 
@@ -136,6 +139,8 @@ async function processTransaction(message) {
         addBotMessage(`Transaction added: ${data.category} (${formatCurrency(data.amount)})`);
         
         // Change the subtitle text to indicate successful transaction addition
+        alert(`Transaction successfully added: ${data.category} `);
+
         document.querySelector('.subtitle').textContent = 'Transaction successfully added!';
 
         loadBalance();
@@ -146,23 +151,46 @@ async function processTransaction(message) {
 
 async function processFinancialQuestion(message) {
     try {
+        // Sending the user's message to the API for analysis
         const response = await fetch(`${API_BASE_URL}/analyze`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json',  // Specify the content type as JSON
             },
-            body: JSON.stringify({
-                query: message
-            }),
+            body: JSON.stringify({ query: message }),  // Send the message in the request body
         });
 
+        // Check if the response is not OK, throw an error
         if (!response.ok) {
             throw new Error('Failed to analyze data');
         }
 
+        // Parse the response data from the API
         const data = await response.json();
-        addBotMessage(data.response);
+        console.log(data);
+
+        // Clean up the response text by removing unwanted characters (like asterisks, markdown, etc.)
+        let cleanResponse = data.response.replace(/\*/g, '');  // Remove asterisks
+        cleanResponse = cleanResponse.replace(/(?:\n\n)+/g, '\n\n');  // Remove excessive newlines
+
+        // Now let's split and format the response by sections and points
+        const sections = cleanResponse.split('\n\n**');  // Split by section headers
+
+        // Clean up section titles and remove leading/trailing spaces
+        const formattedResponse = sections.map((section, index) => {
+            if (index === 0) return section.trim();  // Keep the first section title as it is (e.g., introduction)
+
+            const [sectionTitle, ...points] = section.split('\n*').map(point => point.trim());
+            const formattedPoints = points.join('.\n').replace(/\.$/, '');  // Join points back with proper punctuation
+
+            return `**${sectionTitle.trim()}**:\n\n${formattedPoints}.`;  // Add back the section header with cleaned points
+        }).join('\n\n');
+
+        console.log(formattedResponse)
+        // Display the formatted response (assumed function to handle UI update)
+        addBotMessage(formattedResponse);
     } catch (error) {
+        // If any error occurs during the fetch or data processing
         throw new Error(`Error analyzing data: ${error.message}`);
     }
 }
@@ -173,22 +201,33 @@ async function loadExpenseBreakdown() {
         if (!response.ok) throw new Error('Failed to load expense data');
         
         const data = await response.json();
+
+        console.log(data)
         const expenses = data.expenses;
         
         if (Object.keys(expenses).length === 0) {
             addBotMessage('No expense data available for this month.');
             return;
         }
+
+        // Get the current date in a readable format
+        const currentDate = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', // Full name of the weekday
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
         
-        // In a real app, you would filter by current month from the backend
-        // For now, we'll show all expenses
-        let breakdown = 'Expense Breakdown:\n';
+        // Start the breakdown message with the date
+        let breakdown = `Expense Breakdown Till ${currentDate}:\n\n\n`;
+        let count = 1;
         for (const [category, amount] of Object.entries(expenses)) {
-            breakdown += `- ${category}: ${formatCurrency(amount)}\n`;
+            breakdown += `\n\n${count}. ${category}: ${formatCurrency(amount)}\n\n`;
+            count++;
         }
         
         const total = Object.values(expenses).reduce((sum, amount) => sum + amount, 0);
-        breakdown += `\nTotal Expenses: ${formatCurrency(total)}`;
+        breakdown += `\n\nTotal Expenses: ${formatCurrency(total)}`;
         
         addBotMessage(breakdown);
     } catch (error) {
@@ -223,10 +262,10 @@ function updateBalance(data) {
     let arrowHtml = '';
     if (balanceChange > 0) {
         // Show up arrow (green)
-        arrowHtml = ' <span style="color: green;">↑</span>';
+        // arrowHtml = ' <span style="color: green;">↑</span>';
     } else if (balanceChange < 0) {
         // Show down arrow (red)
-        arrowHtml = ' <span style="color: red;">↓</span>';
+        // arrowHtml = ' <span style="color: red;">↓</span>';
     }
 
     balanceAmount.innerHTML += arrowHtml; // Append the arrow to the balance
@@ -241,7 +280,15 @@ function updateBalance(data) {
 function addUserMessage(text) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message user-message';
+    
+    // Display the user message
     messageDiv.textContent = text;
+    
+    // Add spinner to indicate loading
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    messageDiv.appendChild(spinner);
+    
     chatBox.appendChild(messageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -256,7 +303,16 @@ function addBotMessage(text) {
         if (index > 0) messageDiv.appendChild(document.createElement('br'));
         messageDiv.appendChild(document.createTextNode(line));
     });
-    
+
+    // Remove the spinner from the previous message
+    const userMessageDiv = chatBox.querySelector('.message.user-message');
+    if (userMessageDiv) {
+        const spinner = userMessageDiv.querySelector('.spinner');
+        if (spinner) {
+            spinner.remove(); // Remove the spinner after bot response
+        }
+    }
+
     chatBox.appendChild(messageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -264,6 +320,6 @@ function addBotMessage(text) {
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'BDT'
     }).format(amount);
 }
