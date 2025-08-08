@@ -1,3 +1,25 @@
+// Import Firebase functions
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { 
+    getAuth, 
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyApaox9bfZWul8SfkMltCQnps_xBHMImsE",
+    authDomain: "smart-spend-83959.firebaseapp.com",
+    projectId: "smart-spend-83959",
+    storageBucket: "smart-spend-83959.firebasestorage.app",
+    messagingSenderId: "1090756846106",
+    appId: "1:1090756846106:web:5524053541e033276f67a3"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 // Configuration
 // const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
 
@@ -24,6 +46,8 @@ const currentYear = today.getFullYear();
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
+    // Check authentication status first
+    checkAuthenticationStatus();
     loadBalance();
     setupEventListeners();
 });
@@ -325,4 +349,93 @@ function formatCurrency(amount) {
         style: 'currency',
         currency: 'BDT'
     }).format(amount);
+}
+
+// Authentication Functions
+function checkAuthenticationStatus() {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User authenticated:', user.email);
+            showUserWelcomeMessage(user.email);
+        } else {
+            console.log('User not authenticated, redirecting to login');
+            window.location.href = '/SmartSpend/UI/login/login.html';
+        }
+    });
+}
+
+function showUserWelcomeMessage(email) {
+    // Remove any existing messages
+    hideUserWelcomeMessage();
+    
+    // Create welcome message
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.id = 'userWelcome';
+    welcomeDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        font-family: 'Montserrat', sans-serif;
+        text-align: center;
+        min-width: 300px;
+    `;
+    
+    welcomeDiv.innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <i class="fas fa-user-check" style="margin-right: 8px;"></i>
+            Already logged in as: <strong>${email}</strong>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="continueBtn" style="
+                background: rgba(255,255,255,0.2);
+                border: 1px solid rgba(255,255,255,0.3);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Continue to Dashboard</button>
+            <button id="logoutBtn" style="
+                background: rgba(255,255,255,0.2);
+                border: 1px solid rgba(255,255,255,0.3);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">Sign Out</button>
+        </div>
+    `;
+    
+    document.body.appendChild(welcomeDiv);
+    
+    // Add event listeners
+    document.getElementById('continueBtn').addEventListener('click', () => {
+        hideUserWelcomeMessage();
+    });
+    
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            hideUserWelcomeMessage();
+            console.log('Successfully signed out');
+        } catch (error) {
+            console.error('Sign out error:', error);
+            alert('Failed to sign out. Please try again.');
+        }
+    });
+}
+
+function hideUserWelcomeMessage() {
+    const existingMessage = document.getElementById('userWelcome');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
 }
