@@ -21,11 +21,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Configuration
-// const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
+const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
 
-const API_BASE_URL = 'https://smartspend-7w42.onrender.com'; //Live Host api
-
-// const API_BASE_URL = 'http://localhost:5000'; // Flask default
+// const API_BASE_URL = 'https://smartspend-7w42.onrender.com'; //Live Host api
 
 // DOM Elements
 const balanceAmount = document.getElementById('balanceAmount');
@@ -166,8 +164,6 @@ async function processTransaction(message) {
         addBotMessage(`Transaction added: ${data.category} (${formatCurrency(data.amount)})`);
         
         // Change the subtitle text to indicate successful transaction addition
-        // alert(`Transaction successfully added: ${data.category} `);
-
         document.querySelector('.subtitle').textContent = 'Transaction successfully added!';
 
         loadBalance();
@@ -359,7 +355,10 @@ function checkAuthenticationStatus() {
             showUserWelcomeMessage(user.email);
         } else {
             console.log('User not authenticated, redirecting to login');
-            window.location.href = '/SmartSpend/UI/login/login.html';
+            // Only redirect if not already on login page
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
     });
 }
@@ -426,6 +425,8 @@ function showUserWelcomeMessage(email) {
             await signOut(auth);
             hideUserWelcomeMessage();
             console.log('Successfully signed out');
+            // Redirect to login page after sign out
+            window.location.href = '/login';
         } catch (error) {
             console.error('Sign out error:', error);
             alert('Failed to sign out. Please try again.');
