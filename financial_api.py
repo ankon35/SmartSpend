@@ -131,7 +131,8 @@ app.mount("/UI", StaticFiles(directory="UI"), name="ui")
 async def home(request: Request):
     """Serve the homepage or redirect to login if not authenticated"""
     user_id = request.cookies.get("user_id")
-    if not user_id:
+    # Prevent redirect loop if already on /login
+    if not user_id and request.url.path != "/login":
         return RedirectResponse(url="/login")
     import time
     return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
