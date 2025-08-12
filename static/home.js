@@ -74,7 +74,8 @@ function setupEventListeners() {
                     instruction = 'Showing expense breakdown for the current month...';
                     loadExpenseBreakdown();
                     // Hide the bot message container for expense breakdown
-                    document.querySelector('.message.bot-message').style.display = 'none';
+                    const initialBotMsg = document.querySelector('.message.bot-message');
+                    if (initialBotMsg) initialBotMsg.style.display = 'none';
                     return;
             }
 
@@ -217,8 +218,8 @@ async function processMessage() {
     }
     
     // Show the spinner once Send button is clicked
-    const spinner = document.querySelector('.spinner');
-    spinner.style.display = 'inline-block'; // Show the spinner
+    const spinner = document.getElementById('chatSpinner');
+    if (spinner) spinner.style.display = 'inline-block'; // Show the spinner
 
     chatError.style.display = 'none';
     
@@ -238,7 +239,7 @@ async function processMessage() {
         chatError.style.display = 'block';
         chatError.textContent = error.message;
     } finally {
-        spinner.style.display = 'none'; // Hide the spinner when response is received
+        if (spinner) spinner.style.display = 'none'; // Hide the spinner when response is received
     }
 }
 
