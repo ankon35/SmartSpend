@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
     onAuthStateChanged(auth, (user) => {
         if (user && isIntentionalAuth) {
             console.log('User successfully logged in:', user.email);
+            // Set user_id cookie for backend authentication
+            document.cookie = `user_id=${user.uid}; path=/`;
             // Redirect to dashboard after short delay to allow user to see success message
             setTimeout(() => {
                 window.location.href = '/';
@@ -75,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (user) {
             console.log('User already authenticated, redirecting to dashboard');
             // Always redirect authenticated users to dashboard
+            document.cookie = `user_id=${user.uid}; path=/`;
             window.location.href = '/';
         } else {
             console.log('User is signed out');
