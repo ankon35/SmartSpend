@@ -127,26 +127,20 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/UI", StaticFiles(directory="UI"), name="ui")
 
 # FastAPI Routes
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    """Serve the homepage or redirect to login if not authenticated"""
-    user_id = request.cookies.get("user_id")
-    # Prevent redirect loop if already on /login
-    if not user_id and request.url.path != "/login":
-        return RedirectResponse(url="/login")
-    import time
-    return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
 
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    """Serve the login page"""
+# Landing page is login
+@app.get("/", response_class=HTMLResponse)
+async def login_landing(request: Request):
+    """Serve the login page as the landing page"""
     return templates.TemplateResponse("login.html", {"request": request})
 
+# Dashboard is index.html
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    """Serve the dashboard page (same as home)"""
+    """Serve the dashboard page (main app)"""
     import time
     return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
+
 
 @app.post("/add-transaction")
 async def add_transaction(transaction: Transaction):

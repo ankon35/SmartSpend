@@ -483,25 +483,37 @@ function formatCurrency(amount) {
 // Authentication Functions
 function checkAuthenticationStatus() {
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log('User authenticated:', user.email);
-            currentUser = user;
-            currentUserId = user.uid;
-            showUserWelcomeMessage(user.email);
-            loadBalance();
-            loadUserStats();
-            updateSidebarUserInfo(user);
-        } else {
-            console.log('User not authenticated, redirecting to login');
-            currentUser = null;
-            currentUserId = null;
-            // Only redirect if not already on login page
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
-            }
+    const isLoginPage = window.location.pathname === '/';
+    if (user) {
+        // User is logged in, redirect to /dashboard
+        console.log('User authenticated:', user.email);
+        currentUser = user;
+        currentUserId = user.uid;
+        showUserWelcomeMessage(user.email);
+        loadBalance();
+        loadUserStats();
+        updateSidebarUserInfo(user);
+
+        // Ensure we only redirect to /dashboard if on the login page
+        if (isLoginPage) {
+            setTimeout(() => {
+                window.location.href = '/dashboard'; // Delay redirection to ensure everything is loaded
+            }, 500);
         }
-    });
+    } else {
+        console.log('User not authenticated, redirecting to login');
+        currentUser = null;
+        currentUserId = null;
+
+        // Only redirect to login if the user is not logged in and NOT already on the login page
+        if (!isLoginPage) {
+            window.location.href = '/'; // Redirect to login page (which is the '/' endpoint)
+        }
+    }
+});
+
 }
+
 
 function updateSidebarUserInfo(user) {
     const sidebarUserName = document.getElementById('sidebarUserName');
