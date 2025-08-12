@@ -123,7 +123,7 @@ function setupEventListeners() {
             try {
                 await signOut(auth);
                 console.log('Successfully signed out');
-                window.location.href = '/login';
+                window.location.href = '/';
             } catch (error) {
                 console.error('Sign out error:', error);
                 alert('Failed to sign out. Please try again.');
