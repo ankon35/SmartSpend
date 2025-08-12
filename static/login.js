@@ -76,9 +76,11 @@ document.addEventListener('DOMContentLoaded', function() {
             isIntentionalAuth = false;
         } else if (user) {
             console.log('User already authenticated, redirecting to dashboard');
-            // Always redirect authenticated users to dashboard
-            document.cookie = `user_id=${user.uid}; path=/`;
-            window.location.href = '/';
+            // Only redirect if not already on homepage
+            if (window.location.pathname !== '/') {
+                document.cookie = `user_id=${user.uid}; path=/`;
+                window.location.href = '/';
+            }
         } else {
             console.log('User is signed out');
         }
