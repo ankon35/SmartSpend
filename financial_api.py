@@ -20,29 +20,39 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("Google API key missing. Set GOOGLE_API_KEY in .env")
 
-DATA_FILE = 'financial_data.csv'
+# Create user_data directory if it doesn't exist
+USER_DATA_DIR = 'user_data'
+os.makedirs(USER_DATA_DIR, exist_ok=True)
 
 # Jinja2 template setup for HTML rendering
 templates = Jinja2Templates(directory="templates")
 
 # Shared functions
-def save_data_to_csv(entry_type: str, category: str, amount: float):
+def get_user_data_file(user_id: str) -> str:
+    """Get the CSV file path for a specific user"""
+    return os.path.join(USER_DATA_DIR, f"{user_id}_financial_data.csv")
+
+def save_data_to_csv(user_id: str, entry_type: str, category: str, amount: float):
     """Save transaction with original text as category, along with timestamp"""
-    file_exists = os.path.isfile(DATA_FILE)
+    data_file = get_user_data_file(user_id)
+    file_exists = os.path.isfile(data_file)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(DATA_FILE, 'a', newline='', encoding='utf-8') as file:
+    
+    with open(data_file, 'a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         if not file_exists:
             writer.writerow(['timestamp', 'type', 'category', 'amount'])
         writer.writerow([timestamp, entry_type, category.strip(), amount])
 
-def load_data_from_csv() -> Dict[str, Any]:
-    """Load data preserving original categories"""
+def load_data_from_csv(user_id: str) -> Dict[str, Any]:
+    """Load data preserving original categories for a specific user"""
     data = {'expenses': defaultdict(float), 'deposits': []}
-    if not os.path.isfile(DATA_FILE):
+    data_file = get_user_data_file(user_id)
+    
+    if not os.path.isfile(data_file):
         return data
         
-    with open(DATA_FILE, 'r', encoding='utf-8') as file:
+    with open(data_file, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         header = next(reader, None)
         for row in reader:
@@ -80,9 +90,14 @@ def parse_transaction(text: str) -> Tuple[str, str, float]:
 class Transaction(BaseModel):
     text: str
     amount: float = None
+    user_id: str
 
 class Question(BaseModel):
     query: str
+    user_id: str
+
+class UserData(BaseModel):
+    user_id: str
 
 # FastAPI Implementation
 app = FastAPI(title="SmartSpend Financial Assistant API")
@@ -96,15 +111,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files and UI directories
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/SmartSpend/UI", StaticFiles(directory="UI"), name="ui")
+# Mount static files and UI directories with cache control
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import pathlib
+
+# Custom static files handler with cache control
+class NoCacheStaticFiles(StaticFiles):
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        return False
+
+app.mount("/static", NoCacheStaticFiles(directory="static"), name="static")
+app.mount("/UI", StaticFiles(directory="UI"), name="ui")
 
 # FastAPI Routes
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Serve the homepage"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    import time
+    return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -114,11 +139,12 @@ async def login_page(request: Request):
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Serve the dashboard page (same as home)"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    import time
+    return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
 
 @app.post("/add-transaction")
 async def add_transaction(transaction: Transaction):
-    """Add a new transaction"""
+    """Add a new transaction for a specific user"""
     trans_type, category, amount = parse_transaction(transaction.text)
     
     if transaction.amount is not None:
@@ -127,19 +153,19 @@ async def add_transaction(transaction: Transaction):
     if amount == 0:
         raise HTTPException(status_code=400, detail="Amount is required")
     
-    save_data_to_csv(trans_type, category, amount)
+    save_data_to_csv(transaction.user_id, trans_type, category, amount)
     return {"message": "Transaction saved", "type": trans_type, "category": category, "amount": amount}
 
-@app.get("/get-transactions")
-async def get_transactions():
-    """Get all transactions"""
-    data = load_data_from_csv()
+@app.get("/get-transactions/{user_id}")
+async def get_transactions(user_id: str):
+    """Get all transactions for a specific user"""
+    data = load_data_from_csv(user_id)
     return data
 
 @app.post("/analyze")
 async def analyze(question: Question):
-    """Analyze financial data"""
-    data = load_data_from_csv()
+    """Analyze financial data for a specific user"""
+    data = load_data_from_csv(question.user_id)
     
     try:
         total_expenses = sum(data['expenses'].values())
@@ -176,10 +202,44 @@ Provide specific insights using the exact category names from the data."""),
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/user-stats/{user_id}")
+async def get_user_stats(user_id: str):
+    """Get user statistics and summary"""
+    data = load_data_from_csv(user_id)
+    
+    total_expenses = sum(data['expenses'].values())
+    total_deposits = sum(amt for _, amt in data['deposits'])
+    balance = total_deposits - total_expenses
+    
+    # Get top expenses
+    top_expenses = sorted(data['expenses'].items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    # Get recent transactions
+    data_file = get_user_data_file(user_id)
+    recent_transactions = []
+    if os.path.isfile(data_file):
+        with open(data_file, 'r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            header = next(reader, None)
+            rows = list(reader)
+            # Get last 10 transactions
+            recent_transactions = rows[-10:] if len(rows) > 10 else rows
+    
+    return {
+        "balance": balance,
+        "total_expenses": total_expenses,
+        "total_deposits": total_deposits,
+        "top_expenses": [{"category": k, "amount": v} for k, v in top_expenses],
+        "recent_transactions": recent_transactions,
+        "transaction_count": len(data['expenses']) + len(data['deposits'])
+    }
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "message": "SmartSpend API is running"}
+
+
 
 if __name__ == "__main__":
     print("Starting SmartSpend Financial Assistant API...")

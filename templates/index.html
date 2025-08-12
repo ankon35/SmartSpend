@@ -3,15 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Assistant</title>
-    <link rel="stylesheet" href="/static/home.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>SmartSpend - Financial Assistant</title>
+    <link rel="stylesheet" href="/static/home.css?v={{ timestamp }}">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Header with Logout Button -->
     <header>
         <div class="container">
-            <h1 class="hero-title">Smart Spend</h1>
-            <p class="subtitle">Track and analyze your expenses and deposits</p>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="hero-title">SmartSpend</h1>
+                    <p class="subtitle">Track and analyze your expenses and deposits</p>
+                </div>
+                <div class="header-right">
+                    <button id="logoutBtn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="logout-text">Logout</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -28,9 +48,18 @@
         <div class="message bot-message">Hello! Please select an option to get started:</div>
 
         <div class="options-container">
-            <button class="option-btn" data-option="add-transaction">Add Transaction</button>
-            <button class="option-btn" data-option="financial-analysis">Financial Analysis</button>
-            <button class="option-btn" data-option="expense-breakdown">Expense Breakdown</button>
+            <button class="option-btn" data-option="add-transaction">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Transaction</span>
+            </button>
+            <button class="option-btn" data-option="financial-analysis">
+                <i class="fas fa-chart-line"></i>
+                <span>Financial Analysis</span>
+            </button>
+            <button class="option-btn" data-option="expense-breakdown">
+                <i class="fas fa-list-alt"></i>
+                <span>Expense Breakdown</span>
+            </button>
         </div>
     </div>
 
@@ -38,14 +67,13 @@
         <div class="chat-box" id="chatBox"></div>
         <div class="chat-input">
             <input type="text" id="chatInput" placeholder="Type your message here...">
-            <button type="button" id="sendBtn">Send</button> <!-- Ensured the button type is "button" -->
+            <button type="button" id="sendBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
         <div class="spinner" id="chatSpinner"></div>
         <div class="error-message" id="chatError"></div>
     </div>
-
-
-    
 
     <script type="module" src="/static/home.js"></script>
 </body>

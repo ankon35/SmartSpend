@@ -23,8 +23,6 @@ const auth = getAuth(app);
 // Configuration
 const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
 
-// const API_BASE_URL = 'https://smartspend-7w42.onrender.com'; //Live Host api
-
 // DOM Elements
 const balanceAmount = document.getElementById('balanceAmount');
 const totalDeposits = document.getElementById('totalDeposits');
@@ -38,6 +36,8 @@ const chatError = document.getElementById('chatError');
 
 // State
 let currentMode = null;
+let currentUser = null;
+let currentUserId = null;
 const today = new Date();
 const currentMonth = today.getMonth() + 1;
 const currentYear = today.getFullYear();
@@ -46,8 +46,8 @@ const currentYear = today.getFullYear();
 document.addEventListener('DOMContentLoaded', () => {
     // Check authentication status first
     checkAuthenticationStatus();
-    loadBalance();
     setupEventListeners();
+    setupMobileSidebar();
 });
 
 function setupEventListeners() {
@@ -96,6 +96,100 @@ function setupEventListeners() {
             processMessage();
         }
     });
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    }
+
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                console.log('Successfully signed out');
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Sign out error:', error);
+                alert('Failed to sign out. Please try again.');
+            }
+        });
+    }
+}
+
+function setupMobileSidebar() {
+    // Create mobile sidebar if it doesn't exist
+    if (!document.getElementById('sidebar')) {
+        const sidebar = document.createElement('div');
+        sidebar.id = 'sidebar';
+        sidebar.className = 'mobile-sidebar';
+        sidebar.innerHTML = `
+            <div class="sidebar-header">
+                <h3>SmartSpend</h3>
+                <button id="closeSidebar" class="close-sidebar">×</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span id="sidebarUserName">User</span>
+                        <span id="sidebarUserEmail">user@example.com</span>
+                    </div>
+                </div>
+                <div class="sidebar-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Balance</span>
+                        <span id="sidebarBalance" class="stat-value">$0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Transactions</span>
+                        <span id="sidebarTransactionCount" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="sidebar-btn" onclick="window.location.href='/'">
+                        <i class="fas fa-home"></i> Dashboard
+                    </button>
+                    <button class="sidebar-btn" onclick="window.location.href='/login'">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(sidebar);
+
+        // Add overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+
+        // Close sidebar button
+        const closeBtn = document.getElementById('closeSidebar');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    }
 }
 
 function updateBotMessage(text) {
@@ -107,6 +201,11 @@ function updateBotMessage(text) {
 async function processMessage() {
     const message = chatInput.value.trim();
     if (!message) return;
+    
+    if (!currentUserId) {
+        addBotMessage('Please log in to use this feature.');
+        return;
+    }
     
     // Add user message to chat
     addUserMessage(message);
@@ -151,7 +250,8 @@ async function processTransaction(message) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                text: message
+                text: message,
+                user_id: currentUserId
             }),
         });
 
@@ -167,6 +267,7 @@ async function processTransaction(message) {
         document.querySelector('.subtitle').textContent = 'Transaction successfully added!';
 
         loadBalance();
+        loadUserStats();
     } catch (error) {
         throw new Error(`Error adding transaction: ${error.message}`);
     }
@@ -180,7 +281,10 @@ async function processFinancialQuestion(message) {
             headers: {
                 'Content-Type': 'application/json',  // Specify the content type as JSON
             },
-            body: JSON.stringify({ query: message }),  // Send the message in the request body
+            body: JSON.stringify({ 
+                query: message,
+                user_id: currentUserId
+            }),  // Send the message in the request body
         });
 
         // Check if the response is not OK, throw an error
@@ -220,7 +324,7 @@ async function processFinancialQuestion(message) {
 
 async function loadExpenseBreakdown() {
     try {
-        const response = await fetch(`${API_BASE_URL}/get-transactions`);
+        const response = await fetch(`${API_BASE_URL}/get-transactions/${currentUserId}`);
         if (!response.ok) throw new Error('Failed to load expense data');
         
         const data = await response.json();
@@ -260,13 +364,42 @@ async function loadExpenseBreakdown() {
 
 async function loadBalance() {
     try {
-        const response = await fetch(`${API_BASE_URL}/get-transactions`);
+        if (!currentUserId) return;
+        
+        const response = await fetch(`${API_BASE_URL}/get-transactions/${currentUserId}`);
         if (!response.ok) throw new Error('Failed to load balance data');
         
         const data = await response.json();
         updateBalance(data);
     } catch (error) {
         console.error('Error loading balance:', error);
+    }
+}
+
+async function loadUserStats() {
+    try {
+        if (!currentUserId) return;
+        
+        const response = await fetch(`${API_BASE_URL}/user-stats/${currentUserId}`);
+        if (!response.ok) throw new Error('Failed to load user stats');
+        
+        const stats = await response.json();
+        updateSidebarStats(stats);
+    } catch (error) {
+        console.error('Error loading user stats:', error);
+    }
+}
+
+function updateSidebarStats(stats) {
+    const sidebarBalance = document.getElementById('sidebarBalance');
+    const sidebarTransactionCount = document.getElementById('sidebarTransactionCount');
+    
+    if (sidebarBalance) {
+        sidebarBalance.textContent = formatCurrency(stats.balance);
+    }
+    
+    if (sidebarTransactionCount) {
+        sidebarTransactionCount.textContent = stats.transaction_count;
     }
 }
 
@@ -352,9 +485,16 @@ function checkAuthenticationStatus() {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             console.log('User authenticated:', user.email);
+            currentUser = user;
+            currentUserId = user.uid;
             showUserWelcomeMessage(user.email);
+            loadBalance();
+            loadUserStats();
+            updateSidebarUserInfo(user);
         } else {
             console.log('User not authenticated, redirecting to login');
+            currentUser = null;
+            currentUserId = null;
             // Only redirect if not already on login page
             if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
@@ -363,80 +503,93 @@ function checkAuthenticationStatus() {
     });
 }
 
-function showUserWelcomeMessage(email) {
-    // Remove any existing messages
-    hideUserWelcomeMessage();
+function updateSidebarUserInfo(user) {
+    const sidebarUserName = document.getElementById('sidebarUserName');
+    const sidebarUserEmail = document.getElementById('sidebarUserEmail');
     
-    // Create welcome message
-    const welcomeDiv = document.createElement('div');
-    welcomeDiv.id = 'userWelcome';
-    welcomeDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        z-index: 1000;
-        font-family: 'Montserrat', sans-serif;
-        text-align: center;
-        min-width: 300px;
-    `;
+    if (sidebarUserName) {
+        sidebarUserName.textContent = user.displayName || user.email.split('@')[0];
+    }
     
-    welcomeDiv.innerHTML = `
-        <div style="margin-bottom: 10px;">
-            <i class="fas fa-user-check" style="margin-right: 8px;"></i>
-            Already logged in as: <strong>${email}</strong>
-        </div>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button id="continueBtn" style="
-                background: rgba(255,255,255,0.2);
-                border: 1px solid rgba(255,255,255,0.3);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            ">Continue to Dashboard</button>
-            <button id="logoutBtn" style="
-                background: rgba(255,255,255,0.2);
-                border: 1px solid rgba(255,255,255,0.3);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            ">Sign Out</button>
-        </div>
-    `;
-    
-    document.body.appendChild(welcomeDiv);
-    
-    // Add event listeners
-    document.getElementById('continueBtn').addEventListener('click', () => {
-        hideUserWelcomeMessage();
-    });
-    
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            hideUserWelcomeMessage();
-            console.log('Successfully signed out');
-            // Redirect to login page after sign out
-            window.location.href = '/login';
-        } catch (error) {
-            console.error('Sign out error:', error);
-            alert('Failed to sign out. Please try again.');
-        }
-    });
-}
-
-function hideUserWelcomeMessage() {
-    const existingMessage = document.getElementById('userWelcome');
-    if (existingMessage) {
-        existingMessage.remove();
+    if (sidebarUserEmail) {
+        sidebarUserEmail.textContent = user.email;
     }
 }
+
+// function showUserWelcomeMessage(email) {
+//     // Remove any existing messages
+//     hideUserWelcomeMessage();
+    
+//     // Create welcome message
+//     const welcomeDiv = document.createElement('div');
+//     welcomeDiv.id = 'userWelcome';
+//     welcomeDiv.style.cssText = `
+//         position: fixed;
+//         top: 20px;
+//         left: 50%;
+//         transform: translateX(-50%);
+//         background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+//         color: white;
+//         padding: 15px 25px;
+//         border-radius: 10px;
+//         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+//         z-index: 1000;
+//         font-family: 'Montserrat', sans-serif;
+//         text-align: center;
+//         min-width: 300px;
+//     `;
+    
+//     welcomeDiv.innerHTML = `
+//         <div style="margin-bottom: 10px;">
+//             <i class="fas fa-user-check" style="margin-right: 8px;"></i>
+//             Welcome back: <strong>${email}</strong>
+//         </div>
+//         <div style="display: flex; gap: 10px; justify-content: center;">
+//             <button id="continueBtn" style="
+//                 background: rgba(255,255,255,0.2);
+//                 border: 1px solid rgba(255,255,255,0.3);
+//                 color: white;
+//                 padding: 8px 16px;
+//                 border-radius: 5px;
+//                 cursor: pointer;
+//                 font-size: 14px;
+//             ">Continue to Dashboard</button>
+//             <button id="logoutBtn" style="
+//                 background: rgba(255,255,255,0.2);
+//                 border: 1px solid rgba(255,255,255,0.3);
+//                 color: white;
+//                 padding: 8px 16px;
+//                 border-radius: 5px;
+//                 cursor: pointer;
+//                 font-size: 14px;
+//             ">Sign Out</button>
+//         </div>
+//     `;
+    
+//     document.body.appendChild(welcomeDiv);
+    
+//     // Add event listeners
+//     document.getElementById('continueBtn').addEventListener('click', () => {
+//         hideUserWelcomeMessage();
+//     });
+    
+//     document.getElementById('logoutBtn').addEventListener('click', async () => {
+//         try {
+//             await signOut(auth);
+//             hideUserWelcomeMessage();
+//             console.log('Successfully signed out');
+//             // Redirect to login page after sign out
+//             window.location.href = '/login';
+//         } catch (error) {
+//             console.error('Sign out error:', error);
+//             alert('Failed to sign out. Please try again.');
+//         }
+//     });
+// }
+
+// function hideUserWelcomeMessage() {
+//     const existingMessage = document.getElementById('userWelcome');
+//     if (existingMessage) {
+//         existingMessage.remove();
+//     }
+// }
