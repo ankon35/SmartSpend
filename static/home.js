@@ -74,8 +74,7 @@ function setupEventListeners() {
                     instruction = 'Showing expense breakdown for the current month...';
                     loadExpenseBreakdown();
                     // Hide the bot message container for expense breakdown
-                    const initialBotMsg = document.querySelector('.message.bot-message');
-                    if (initialBotMsg) initialBotMsg.style.display = 'none';
+                    document.querySelector('.message.bot-message').style.display = 'none';
                     return;
             }
 
