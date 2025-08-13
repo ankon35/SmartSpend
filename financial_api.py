@@ -13,7 +13,6 @@ from collections import defaultdict
 from datetime import datetime
 from pydantic import BaseModel
 import uvicorn
-from fastapi.staticfiles import StaticFiles
 
 # Load environment variables
 load_dotenv()
@@ -120,10 +119,9 @@ import pathlib
 # Custom static files handler with cache control
 class NoCacheStaticFiles(StaticFiles):
     def is_not_modified(self, response_headers, request_headers) -> bool:
-        return False 
+        return False
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-# app.mount("/static", NoCacheStaticFiles(directory="static"), name="static")
+app.mount("/static", NoCacheStaticFiles(directory="static"), name="static")
 app.mount("/UI", StaticFiles(directory="UI"), name="ui")
 
 # FastAPI Routes

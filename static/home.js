@@ -217,8 +217,8 @@ async function processMessage() {
     }
     
     // Show the spinner once Send button is clicked
-    const spinner = document.getElementById('chatSpinner');
-    if (spinner) spinner.style.display = 'inline-block'; // Show the spinner
+    const spinner = document.querySelector('.spinner');
+    spinner.style.display = 'inline-block'; // Show the spinner
 
     chatError.style.display = 'none';
     
@@ -238,7 +238,7 @@ async function processMessage() {
         chatError.style.display = 'block';
         chatError.textContent = error.message;
     } finally {
-        if (spinner) spinner.style.display = 'none'; // Hide the spinner when response is received
+        spinner.style.display = 'none'; // Hide the spinner when response is received
     }
 }
 
