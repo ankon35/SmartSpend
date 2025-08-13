@@ -158,9 +158,18 @@ async def add_transaction(transaction: Transaction):
 
 @app.get("/get-transactions/{user_id}")
 async def get_transactions(user_id: str):
-    """Get all transactions for a specific user"""
+    """Get all transactions for a specific user, including balance and transaction count for sidebar stats"""
     data = load_data_from_csv(user_id)
-    return data
+    total_expenses = sum(data['expenses'].values())
+    total_deposits = sum(amt for _, amt in data['deposits'])
+    balance = total_deposits - total_expenses
+    transaction_count = len(data['deposits']) + sum(1 for _ in data['expenses'])
+    return {
+        'expenses': dict(data['expenses']),
+        'deposits': data['deposits'],
+        'balance': balance,
+        'transaction_count': transaction_count
+    }
 
 @app.post("/analyze")
 async def analyze(question: Question):

@@ -24,9 +24,7 @@ const auth = getAuth(app);
 const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
 
 // DOM Elements
-const balanceAmount = document.getElementById('balanceAmount');
-const totalDeposits = document.getElementById('totalDeposits');
-const totalExpenses = document.getElementById('totalExpenses');
+let balanceAmount, totalDeposits, totalExpenses;
 const optionBtns = document.querySelectorAll('.option-btn');
 const chatBox = document.getElementById('chatBox');
 const chatInput = document.getElementById('chatInput');
@@ -44,10 +42,14 @@ const currentYear = today.getFullYear();
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication status first
-    checkAuthenticationStatus();
+    // Assign DOM elements after DOM is loaded
+    balanceAmount = document.getElementById('balanceAmount');
+    totalDeposits = document.getElementById('totalDeposits');
+    totalExpenses = document.getElementById('totalExpenses');
     setupEventListeners();
     setupMobileSidebar();
+    // Check authentication status after DOM elements are assigned
+    checkAuthenticationStatus();
 });
 
 function setupEventListeners() {
@@ -73,8 +75,7 @@ function setupEventListeners() {
                 case 'expense-breakdown':
                     instruction = 'Showing expense breakdown for the current month...';
                     loadExpenseBreakdown();
-                    // Hide the bot message container for expense breakdown
-                    document.querySelector('.message.bot-message').style.display = 'none';
+                    // Do not hide the bot message container so breakdown is visible
                     return;
             }
 
@@ -405,32 +406,27 @@ function updateSidebarStats(stats) {
 
 let previousBalance = 0; // Track previous balance
 
-function updateBalance(data) {
-    const totalExpensesValue = Object.values(data.expenses).reduce((sum, amount) => sum + amount, 0);
-    const totalDepositsValue = data.deposits.reduce((sum, deposit) => sum + deposit[1], 0);
-    const balance = totalDepositsValue - totalExpensesValue;
-
-    balanceAmount.textContent = formatCurrency(balance); // Update balance text
-
-    // Determine if balance is up or down compared to previous balance
-    const balanceChange = balance - previousBalance;
-
-    let arrowHtml = '';
-    if (balanceChange > 0) {
-        // Show up arrow (green)
-        // arrowHtml = ' <span style="color: green;">↑</span>';
-    } else if (balanceChange < 0) {
-        // Show down arrow (red)
-        // arrowHtml = ' <span style="color: red;">↓</span>';
+async function updateBalance() {
+    console.log('[updateBalance] called. currentUserId:', currentUserId);
+    if (!currentUserId) {
+        console.warn('[updateBalance] currentUserId is not set. Aborting fetch.');
+        return;
     }
-
-    balanceAmount.innerHTML += arrowHtml; // Append the arrow to the balance
-
-    // Update the previous balance to the current one
-    previousBalance = balance;
-
-    totalExpenses.textContent = formatCurrency(totalExpensesValue);
-    totalDeposits.textContent = formatCurrency(totalDepositsValue);
+    try {
+        const response = await fetch(`${API_BASE_URL}/get-transactions/${currentUserId}`);
+        console.log('[updateBalance] Fetched /get-transactions/', currentUserId, 'Status:', response.status);
+        if (!response.ok) throw new Error('Failed to fetch user financial data');
+        const data = await response.json();
+        console.log('[updateBalance] Data received:', data);
+        balanceAmount.textContent = formatCurrency(data.balance); // Use backend-calculated balance
+        totalExpenses.textContent = formatCurrency(Object.values(data.expenses).reduce((sum, amount) => sum + amount, 0));
+        totalDeposits.textContent = formatCurrency(data.deposits.reduce((sum, deposit) => sum + deposit[1], 0));
+    } catch (error) {
+        balanceAmount.textContent = 'Error';
+        totalExpenses.textContent = 'Error';
+        totalDeposits.textContent = 'Error';
+        console.error('Error updating balance:', error);
+    }
 }
 
 function addUserMessage(text) {
@@ -481,16 +477,25 @@ function formatCurrency(amount) {
 }
 
 // Authentication Functions
-function checkAuthenticationStatus() {
-    onAuthStateChanged(auth, (user) => {
+async function checkAuthenticationStatus() {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             console.log('User authenticated:', user.email);
             currentUser = user;
             currentUserId = user.uid;
-            showUserWelcomeMessage(user.email);
-            loadBalance();
+            // showUserWelcomeMessage(user.email); // Removed to fix ReferenceError
+            await updateBalance();
             loadUserStats();
             updateSidebarUserInfo(user);
+            // Programmatically trigger the expense-breakdown button click to update dashboard UI
+            const expenseBtn = Array.from(optionBtns).find(btn => btn.dataset.option === 'expense-breakdown');
+            if (expenseBtn) {
+                expenseBtn.click();
+            } else {
+                // Fallback: set mode and fetch breakdown if button not found
+                currentMode = 'expense-breakdown';
+                loadExpenseBreakdown();
+            }
         } else {
             console.log('User not authenticated, redirecting to login');
             currentUser = null;
