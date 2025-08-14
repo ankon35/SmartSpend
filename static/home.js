@@ -1,3 +1,4 @@
+
 // Import Firebase functions
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { 
@@ -21,9 +22,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Configuration
-// const API_BASE_URL = 'https://smartspend-2.onrender.com'; 
-
-const API_BASE_URL = 'http://localhost:8000' // FastAPI default
+const API_BASE_URL = 'http://localhost:8000'
 
 // DOM Elements
 let balanceAmount, totalDeposits, totalExpenses;
@@ -126,7 +125,7 @@ function setupEventListeners() {
             try {
                 await signOut(auth);
                 console.log('Successfully signed out');
-                window.location.href = '/';
+                window.location.href = '/login';
             } catch (error) {
                 console.error('Sign out error:', error);
                 alert('Failed to sign out. Please try again.');
@@ -479,16 +478,18 @@ function formatCurrency(amount) {
 }
 
 // Authentication Functions
-function checkAuthenticationStatus() {
-    onAuthStateChanged(auth, (user) => {
+async function checkAuthenticationStatus() {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             console.log('User authenticated:', user.email);
             currentUser = user;
             currentUserId = user.uid;
-            showUserWelcomeMessage(user.email);
-            loadBalance();
+            // showUserWelcomeMessage(user.email); // Removed to fix ReferenceError
+            await updateBalance();
             loadUserStats();
             updateSidebarUserInfo(user);
+            // Do not activate any option button initially
+            // (No button will be active on page load)
         } else {
             console.log('User not authenticated, redirecting to login');
             currentUser = null;
@@ -498,10 +499,8 @@ function checkAuthenticationStatus() {
                 window.location.href = '/login';
             }
         }
-    }); // Close onAuthStateChanged
-} // Close checkAuthenticationStatus function
-
-
+    });
+}
 
 function updateSidebarUserInfo(user) {
     const sidebarUserName = document.getElementById('sidebarUserName');
