@@ -21,7 +21,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Configuration
-const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
+const API_BASE_URL = 'https://smartspend-2.onrender.com'; // FastAPI default
 
 // DOM Elements
 let balanceAmount, totalDeposits, totalExpenses;
