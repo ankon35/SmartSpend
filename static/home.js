@@ -1,3 +1,35 @@
+// --- Dynamic Login/Logout Button Rendering ---
+function renderAuthButton(user) {
+    const authBtnContainer = document.getElementById('authBtnContainer');
+    if (!authBtnContainer) return;
+    authBtnContainer.innerHTML = '';
+    if (user) {
+        // Show Logout button
+        const btn = document.createElement('button');
+        btn.id = 'logoutBtn';
+        btn.className = 'logout-btn';
+        btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span class="logout-text">Logout</span>';
+        btn.onclick = async () => {
+            try {
+                await signOut(auth);
+                window.location.href = '/login';
+            } catch (error) {
+                alert('Logout failed. Please try again.');
+            }
+        };
+        authBtnContainer.appendChild(btn);
+    } else {
+        // Show Login button
+        const btn = document.createElement('button');
+        btn.id = 'loginBtn';
+        btn.className = 'logout-btn';
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> <span class="logout-text">Login</span>';
+        btn.onclick = () => {
+            window.location.href = '/login';
+        };
+        authBtnContainer.appendChild(btn);
+    }
+}
 
 // Import Firebase functions
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
@@ -22,8 +54,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Configuration
-// const API_BASE_URL = 'http://localhost:8000'
-const API_BASE_URL = 'https://smartspend-2.onrender.com';
+const API_BASE_URL = 'http://localhost:8000'
+// const API_BASE_URL = 'https://smartspend-2.onrender.com';
 
 // DOM Elements
 let balanceAmount, totalDeposits, totalExpenses;
@@ -50,6 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
     totalExpenses = document.getElementById('totalExpenses');
     setupEventListeners();
     setupMobileSidebar();
+    // Listen for auth state changes and update button
+    onAuthStateChanged(auth, (user) => {
+        renderAuthButton(user);
+    });
     // Check authentication status after DOM elements are assigned
     checkAuthenticationStatus();
 });
@@ -482,23 +518,26 @@ function formatCurrency(amount) {
 async function checkAuthenticationStatus() {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            console.log('User authenticated:', user.email);
             currentUser = user;
             currentUserId = user.uid;
-            // showUserWelcomeMessage(user.email); // Removed to fix ReferenceError
             await updateBalance();
             loadUserStats();
             updateSidebarUserInfo(user);
-            // Do not activate any option button initially
-            // (No button will be active on page load)
+            // Enable UI
+            optionBtns.forEach(btn => btn.disabled = false);
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
         } else {
-            console.log('User not authenticated, redirecting to login');
             currentUser = null;
             currentUserId = null;
-            // Only redirect if not already on login page
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
-            }
+            // Block UI and show message
+            optionBtns.forEach(btn => btn.disabled = true);
+            chatInput.disabled = true;
+            sendBtn.disabled = true;
+            chatBox.innerHTML = '<div class="message bot-message">Please log in to use the system.</div>';
+            balanceAmount.textContent = '$0.00';
+            totalDeposits.textContent = '$0.00';
+            totalExpenses.textContent = '$0.00';
         }
     });
 }
