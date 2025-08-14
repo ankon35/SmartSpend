@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,15 +12,53 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
-    <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-    </div>
+
+
 
     <!-- Header with Logout Button -->
     <header>
+
+
+
         <div class="container">
+
+                    <!-- Sidebar (dynamic, always visible on desktop, toggled on mobile) -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h2>Smart Spend</h2>
+                <button id="closeSidebar" class="close-sidebar" aria-label="Close sidebar"><i
+                        class="fas fa-chevron-left"></i></button>
+            </div>
+            <div class="sidebar-content">
+                <div class="user-info">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <div class="user-details">
+                        <span id="sidebarUserName">User</span>
+                        <span id="sidebarUserEmail">user@example.com</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="sidebar-credit">@ALL RIGHT RESERVED BY ANKON HOSSAIN</div>
+                <div class="sidebar-social">
+                    <a href="https://facebook.com/ankon.hossain" target="_blank" title="Facebook"><i
+                            class="fab fa-facebook"></i></a>
+                    <a href="https://github.com/ankon35" target="https://github.com/ankon35" title="GitHub"><i
+                            class="fab fa-github"></i></a>
+                    <a href="https://linkedin.com/in/ankon35" target="https://www.linkedin.com/in/ankonhossain/" title="LinkedIn"><i
+                            class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </nav>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar Toggle Button (menu icon, only for mobile) -->
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Open sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
             <div class="header-content">
                 <div class="header-left">
                     <h1 class="hero-title">SmartSpend</h1>
@@ -74,4 +113,5 @@
 
     <script type="module" src="/static/home.js"></script>
 </body>
+
 </html>

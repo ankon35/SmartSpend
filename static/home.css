@@ -1,3 +1,189 @@
+
+
+@media (max-width: 900px) {
+    .sidebar {
+        left: -100vw;
+        width: 60vw;
+        min-width: 160px;
+        max-width: 95vw;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1999;
+        opacity: 1;
+        visibility: visible;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle-btn {
+        display: flex;
+    }
+}
+
+.sidebar-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-sidebar {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-content {
+    padding: 20px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.user-details span:first-child {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.user-details span:last-child {
+    font-size: 14px;
+    color: var(--light-text);
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.sidebar-credit {
+    font-size: 13px;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.sidebar-social {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+}
+
+.sidebar-social a {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    transition: color 0.2s;
+}
+
+.sidebar-social a:hover {
+    color: var(--accent-color);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1999;
+    overflow: hidden;
+}
+
+/* Ensure main content does not cover sidebar */
+.sidebar.active ~ .container,
+.sidebar.active ~ header,
+.sidebar.active ~ .chat-container {
+    pointer-events: none;
+    filter: blur(2px) grayscale(0.2);
+}
+
+/* Sidebar overlay visibility */
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s ease;
+}
+
+/* For hidden state of the overlay */
+.sidebar-overlay {
+    opacity: 0;
+    visibility: hidden;
+}
+
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 60vw;
+        min-width: 180px;
+        max-width: 95vw;
+    }
+}
+
+@media (max-width: 600px) {
+    .sidebar {
+        width: 60vw;
+        min-width: 120px;
+        max-width: 95vw;
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .sidebar-footer {
+        font-size: 12px;
+    }
+}
+
 /* SmartSpend - Homepage Styles */
 /* Updated: CSS cache-busting test - {{ timestamp }} */
 /* Consistent color scheme with login page */
@@ -30,6 +216,123 @@ body {
     line-height: 1.6;
     min-height: 100vh;
 }
+
+
+
+
+
+.sidebar-content {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.user-details span:first-child {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.user-details span:last-child {
+    font-size: 14px;
+    color: var(--light-text);
+}
+
+/* Sidebar Styles */
+/* Sidebar always visible on desktop, toggled on mobile */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 30vw;
+    min-width: 260px;
+    max-width: 350px;
+    height: 100vh;
+    background: var(--card-background);
+    box-shadow: var(--shadow-hover);
+    z-index: 2000;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+    .sidebar {
+        left: -100vw;
+    }
+    .sidebar.active {
+        left: 0;
+    }
+
+.sidebar-overlay {
+}
+
+.sidebar-toggle-btn {
+    display: flex;
+    z-index: 2100;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.close-sidebar {
+    background: none;
+    .sidebar-footer {
+        font-size: 12px;
+    }
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.close-sidebar:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+
+
+
+
+
 
 .container {
     max-width: 1200px;
@@ -183,7 +486,8 @@ header {
 /* Options Container */
 .options-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 equal columns */
     gap: 20px;
     margin: 30px 0;
 }
@@ -274,7 +578,7 @@ header {
     padding: 20px;
     background: var(--card-background);
     border-top: 1px solid var(--border-color);
-    
+
 }
 
 .chat-input input {
@@ -328,8 +632,13 @@ header {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Error Message */
@@ -392,6 +701,8 @@ header {
 
 .sidebar-content {
     padding: 20px;
+    overflow-y: auto;
+    max-height: 70vh;
 }
 
 .user-info {
@@ -510,97 +821,101 @@ header {
     .container {
         padding: 0 15px;
     }
-    
+
     .mobile-menu-btn {
         display: none;
         /* display: flex; */
     }
-    
+
     .header-content {
         flex-direction: column;
         text-align: center;
         gap: 15px;
     }
-    
+
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .subtitle {
         font-size: 1rem;
     }
-    
+
     .logout-btn {
         padding: 10px 15px;
         font-size: 13px;
     }
-    
+
     .logout-text {
         display: none;
     }
-    
+
     .balance-card {
         padding: 20px;
         margin: 20px 0;
     }
-    
+
     .balance-amount {
         font-size: 2.5rem;
     }
-    
+
     .balance-details {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     /* Layout for smaller screens (max-width: 768px) */
 
     .options-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
-        justify-items: center;  /* Center items horizontally */
-        align-items: center;    /* Center items vertically (optional, based on your layout) */
+        justify-items: center;
+        /* Center items horizontally */
+        align-items: center;
+        /* Center items vertically (optional, based on your layout) */
     }
 
     .option-btn:nth-child(3) {
-        grid-column: 1 / -1; /* Make the 3rd button span both columns */
-        text-align: center;   /* Center the text inside the button */
+        grid-column: 1 / -1;
+        /* Make the 3rd button span both columns */
+        text-align: center;
+        /* Center the text inside the button */
     }
 
 
-    
+
     .option-btn {
         padding: 20px 15px;
         flex-direction: row;
         justify-content: flex-start;
         text-align: left;
     }
-    
+
     .option-btn i {
         margin-bottom: 0;
         margin-right: 15px;
     }
-    
+
     .chat-box {
         /* height: 300px; */
         max-height: 150px;
         overflow-y: auto;
     }
-    
+
     .message {
         max-width: 90%;
     }
-    
+
     .chat-input {
         padding: 15px;
     }
-    
+
     .chat-input input {
         padding: 12px;
         font-size: 14px;
     }
-    
+
     .chat-input button {
         width: 45px;
         height: 45px;
@@ -611,30 +926,30 @@ header {
     .hero-title {
         font-size: 1.8rem;
     }
-    
+
     .balance-amount {
         font-size: 2rem;
     }
-    
+
     .option-btn {
         padding: 15px;
         font-size: 14px;
     }
-    
+
     .option-btn i {
         font-size: 1.5rem;
     }
-    
+
     .chat-box {
         /* height: 250px; */
         padding: 15px;
     }
-    
+
     .message {
         padding: 12px;
         font-size: 14px;
     }
-    
+
     .mobile-sidebar {
         width: 280px;
     }
@@ -646,6 +961,7 @@ header {
         transform: translateX(-50%) translateY(-20px);
         opacity: 0;
     }
+
     to {
         transform: translateX(-50%) translateY(0);
         opacity: 1;

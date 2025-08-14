@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     totalDeposits = document.getElementById('totalDeposits');
     totalExpenses = document.getElementById('totalExpenses');
     setupEventListeners();
-    setupMobileSidebar();
+    setupSidebar();
     // Listen for auth state changes and update button
     onAuthStateChanged(auth, (user) => {
         renderAuthButton(user);
@@ -171,63 +171,41 @@ function setupEventListeners() {
     }
 }
 
-function setupMobileSidebar() {
-    // Create mobile sidebar if it doesn't exist
-    if (!document.getElementById('sidebar')) {
-        const sidebar = document.createElement('div');
-        sidebar.id = 'sidebar';
-        sidebar.className = 'mobile-sidebar';
-        sidebar.innerHTML = `
-            <div class="sidebar-header">
-                <h3>SmartSpend</h3>
-                <button id="closeSidebar" class="close-sidebar">×</button>
-            </div>
-            <div class="sidebar-content">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-details">
-                        <span id="sidebarUserName">User</span>
-                        <span id="sidebarUserEmail">user@example.com</span>
-                    </div>
-                </div>
-                <div class="sidebar-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Balance</span>
-                        <span id="sidebarBalance" class="stat-value">$0.00</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Total Transactions</span>
-                        <span id="sidebarTransactionCount" class="stat-value">0</span>
-                    </div>
-                </div>
-                <div class="sidebar-actions">
-                    <button class="sidebar-btn" onclick="window.location.href='/'">
-                        <i class="fas fa-home"></i> Dashboard
-                    </button>
-                    <button class="sidebar-btn" onclick="window.location.href='/login'">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(sidebar);
+function setupSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeBtn = document.getElementById('closeSidebar');
 
-        // Add overlay
-        const overlay = document.createElement('div');
-        overlay.id = 'sidebarOverlay';
-        overlay.className = 'sidebar-overlay';
-        document.body.appendChild(overlay);
+   const toggleBtn = document.getElementById('sidebarToggleBtn');
+// On mobile, open sidebar with toggle button
+if (toggleBtn && sidebar && overlay) {
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+        document.body.classList.add('sidebar-open');
+        
+        // Hide the toggle button after opening the sidebar
+        toggleBtn.style.display = 'none';
+    });
+}
 
-        // Close sidebar button
-        const closeBtn = document.getElementById('closeSidebar');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
+    // Close with close icon
+    if (closeBtn && sidebar && overlay) {
+        closeBtn.onclick = function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+            toggleBtn.style.display = 'block'; 
+        };
+    }
+    // Close with overlay click
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        });
     }
 }
 
