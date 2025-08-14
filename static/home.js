@@ -487,15 +487,8 @@ async function checkAuthenticationStatus() {
             await updateBalance();
             loadUserStats();
             updateSidebarUserInfo(user);
-            // Programmatically trigger the expense-breakdown button click to update dashboard UI
-            const expenseBtn = Array.from(optionBtns).find(btn => btn.dataset.option === 'expense-breakdown');
-            if (expenseBtn) {
-                expenseBtn.click();
-            } else {
-                // Fallback: set mode and fetch breakdown if button not found
-                currentMode = 'expense-breakdown';
-                loadExpenseBreakdown();
-            }
+            // Do not activate any option button initially
+            // (No button will be active on page load)
         } else {
             console.log('User not authenticated, redirecting to login');
             currentUser = null;
