@@ -21,12 +21,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Configuration
-const API_BASE_URL = 'http://localhost:8000'; // FastAPI default
+const API_BASE_URL = 'https://smartspend-2.onrender.com'; // FastAPI default
 
 // DOM Elements
-const balanceAmount = document.getElementById('balanceAmount');
-const totalDeposits = document.getElementById('totalDeposits');
-const totalExpenses = document.getElementById('totalExpenses');
+let balanceAmount, totalDeposits, totalExpenses;
 const optionBtns = document.querySelectorAll('.option-btn');
 const chatBox = document.getElementById('chatBox');
 const chatInput = document.getElementById('chatInput');
@@ -44,10 +42,14 @@ const currentYear = today.getFullYear();
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication status first
-    checkAuthenticationStatus();
+    // Assign DOM elements after DOM is loaded
+    balanceAmount = document.getElementById('balanceAmount');
+    totalDeposits = document.getElementById('totalDeposits');
+    totalExpenses = document.getElementById('totalExpenses');
     setupEventListeners();
     setupMobileSidebar();
+    // Check authentication status after DOM elements are assigned
+    checkAuthenticationStatus();
 });
 
 function setupEventListeners() {
@@ -73,8 +75,7 @@ function setupEventListeners() {
                 case 'expense-breakdown':
                     instruction = 'Showing expense breakdown for the current month...';
                     loadExpenseBreakdown();
-                    // Hide the bot message container for expense breakdown
-                    document.querySelector('.message.bot-message').style.display = 'none';
+                    // Do not hide the bot message container so breakdown is visible
                     return;
             }
 
@@ -217,8 +218,8 @@ async function processMessage() {
     }
     
     // Show the spinner once Send button is clicked
-    const spinner = document.getElementById('chatSpinner');
-    if (spinner) spinner.style.display = 'inline-block'; // Show the spinner
+    const spinner = document.querySelector('.spinner');
+    spinner.style.display = 'inline-block'; // Show the spinner
 
     chatError.style.display = 'none';
     
@@ -238,7 +239,7 @@ async function processMessage() {
         chatError.style.display = 'block';
         chatError.textContent = error.message;
     } finally {
-        if (spinner) spinner.style.display = 'none'; // Hide the spinner when response is received
+        spinner.style.display = 'none'; // Hide the spinner when response is received
     }
 }
 
@@ -405,32 +406,27 @@ function updateSidebarStats(stats) {
 
 let previousBalance = 0; // Track previous balance
 
-function updateBalance(data) {
-    const totalExpensesValue = Object.values(data.expenses).reduce((sum, amount) => sum + amount, 0);
-    const totalDepositsValue = data.deposits.reduce((sum, deposit) => sum + deposit[1], 0);
-    const balance = totalDepositsValue - totalExpensesValue;
-
-    balanceAmount.textContent = formatCurrency(balance); // Update balance text
-
-    // Determine if balance is up or down compared to previous balance
-    const balanceChange = balance - previousBalance;
-
-    let arrowHtml = '';
-    if (balanceChange > 0) {
-        // Show up arrow (green)
-        // arrowHtml = ' <span style="color: green;">↑</span>';
-    } else if (balanceChange < 0) {
-        // Show down arrow (red)
-        // arrowHtml = ' <span style="color: red;">↓</span>';
+async function updateBalance() {
+    console.log('[updateBalance] called. currentUserId:', currentUserId);
+    if (!currentUserId) {
+        console.warn('[updateBalance] currentUserId is not set. Aborting fetch.');
+        return;
     }
-
-    balanceAmount.innerHTML += arrowHtml; // Append the arrow to the balance
-
-    // Update the previous balance to the current one
-    previousBalance = balance;
-
-    totalExpenses.textContent = formatCurrency(totalExpensesValue);
-    totalDeposits.textContent = formatCurrency(totalDepositsValue);
+    try {
+        const response = await fetch(`${API_BASE_URL}/get-transactions/${currentUserId}`);
+        console.log('[updateBalance] Fetched /get-transactions/', currentUserId, 'Status:', response.status);
+        if (!response.ok) throw new Error('Failed to fetch user financial data');
+        const data = await response.json();
+        console.log('[updateBalance] Data received:', data);
+        balanceAmount.textContent = formatCurrency(data.balance); // Use backend-calculated balance
+        totalExpenses.textContent = formatCurrency(Object.values(data.expenses).reduce((sum, amount) => sum + amount, 0));
+        totalDeposits.textContent = formatCurrency(data.deposits.reduce((sum, deposit) => sum + deposit[1], 0));
+    } catch (error) {
+        balanceAmount.textContent = 'Error';
+        totalExpenses.textContent = 'Error';
+        totalDeposits.textContent = 'Error';
+        console.error('Error updating balance:', error);
+    }
 }
 
 function addUserMessage(text) {
@@ -483,36 +479,26 @@ function formatCurrency(amount) {
 // Authentication Functions
 function checkAuthenticationStatus() {
     onAuthStateChanged(auth, (user) => {
-    const isLoginPage = window.location.pathname === '/';
-    if (user) {
-        // User is logged in, redirect to /dashboard
-        console.log('User authenticated:', user.email);
-        currentUser = user;
-        currentUserId = user.uid;
-        showUserWelcomeMessage(user.email);
-        loadBalance();
-        loadUserStats();
-        updateSidebarUserInfo(user);
-
-        // Ensure we only redirect to /dashboard if on the login page
-        if (isLoginPage) {
-            setTimeout(() => {
-                window.location.href = '/dashboard'; // Delay redirection to ensure everything is loaded
-            }, 500);
+        if (user) {
+            console.log('User authenticated:', user.email);
+            currentUser = user;
+            currentUserId = user.uid;
+            showUserWelcomeMessage(user.email);
+            loadBalance();
+            loadUserStats();
+            updateSidebarUserInfo(user);
+        } else {
+            console.log('User not authenticated, redirecting to login');
+            currentUser = null;
+            currentUserId = null;
+            // Only redirect if not already on login page
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
-    } else {
-        console.log('User not authenticated, redirecting to login');
-        currentUser = null;
-        currentUserId = null;
+    }); // Close onAuthStateChanged
+} // Close checkAuthenticationStatus function
 
-        // Only redirect to login if the user is not logged in and NOT already on the login page
-        if (!isLoginPage) {
-            window.location.href = '/'; // Redirect to login page (which is the '/' endpoint)
-        }
-    }
-});
-
-}
 
 
 function updateSidebarUserInfo(user) {

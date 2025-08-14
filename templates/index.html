@@ -7,9 +7,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>SmartSpend - Financial Assistant</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='home.css') }}?v={{ timestamp }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}?v={{ timestamp }}">
 
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -76,6 +76,6 @@
         <div class="error-message" id="chatError"></div>
     </div>
 
-    <script type="module" src="{{ url_for('static', path='home.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='home.js') }}"></script>
 </body>
 </html>
