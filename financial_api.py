@@ -125,20 +125,22 @@ app.mount("/static", NoCacheStaticFiles(directory="static"), name="static")
 app.mount("/UI", StaticFiles(directory="UI"), name="ui")
 
 # FastAPI Routes
-
-# Landing page is login
 @app.get("/", response_class=HTMLResponse)
-async def login_landing(request: Request):
-    """Serve the login page as the landing page"""
-    return templates.TemplateResponse("login.html", {"request": request})
-
-# Dashboard is index.html
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Serve the dashboard page (main app)"""
+async def home(request: Request):
+    """Serve the homepage"""
     import time
     return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    """Serve the login page"""
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    """Serve the dashboard page (same as home)"""
+    import time
+    return templates.TemplateResponse("index.html", {"request": request, "timestamp": int(time.time())})
 
 @app.post("/add-transaction")
 async def add_transaction(transaction: Transaction):

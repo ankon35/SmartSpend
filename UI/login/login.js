@@ -68,16 +68,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('User successfully logged in:', user.email);
             // Redirect to dashboard after short delay to allow user to see success message
             setTimeout(() => {
-                window.location.href = '/dashboard';
-                console.log('SmartSpend authentication system ready');
+                window.location.href = '/';
             }, 1500);
             // Reset the flag
             isIntentionalAuth = false;
         } else if (user) {
             console.log('User already authenticated, redirecting to dashboard');
             // Always redirect authenticated users to dashboard
-            window.location.href = '/dashboard';
-            console.log('SmartSpend authentication system ready');
+            window.location.href = '/';
         } else {
             console.log('User is signed out');
         }
@@ -318,4 +316,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    console.log('SmartSpend authentication system ready');
 });
