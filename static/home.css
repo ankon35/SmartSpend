@@ -287,8 +287,7 @@ body {
         left: 0;
     }
 
-.sidebar-overlay {
-}
+
 
 .sidebar-toggle-btn {
     display: flex;
@@ -847,7 +846,7 @@ header {
     }
 
     .logout-text {
-        display: none;
+        /* display: none; */
     }
 
     .balance-card {
