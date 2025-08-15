@@ -7,6 +7,57 @@
     <link rel="stylesheet" href="/UI/login/login.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Mobile form toggle links */
+        .form-toggle-link {
+            display: none;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .form-toggle-link a {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-decoration: none;
+            margin-left: 5px;
+        }
+        
+        .form-toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .form-toggle-link {
+                display: block;
+            }
+            
+            .form-container {
+                width: 100%;
+            }
+            
+            .sign-up-container {
+                transform: translateX(100%);
+            }
+            
+            .container.right-panel-active .sign-up-container {
+                transform: translateX(0);
+            }
+            
+            .container.right-panel-active .sign-in-container {
+                transform: translateX(-100%);
+            }
+            
+            .overlay-container {
+                display: none;
+            }
+            
+            /* Remove the absolute positioned toggle button */
+            .mobile-toggle-btn {
+                display: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -25,6 +76,9 @@
                 <input type="password" id="signupPassword" placeholder="Password" required />
                 <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required />
                 <button type="submit">Sign Up</button>
+                <div class="form-toggle-link">
+                    Already have an account? <a href="#" id="goToSignIn">Sign In</a>
+                </div>
             </form>
         </div>
         <div class="form-container sign-in-container">
@@ -40,6 +94,9 @@
                 <input type="password" id="loginPassword" placeholder="Password" required />
                 <a href="#" id="forgotPassword">Forgot your password?</a>
                 <button type="submit">Sign In</button>
+                <div class="form-toggle-link">
+                    Don't have an account? <a href="#" id="goToSignUp">Sign Up</a>
+                </div>
             </form>
         </div>
         <div class="overlay-container">
@@ -72,5 +129,18 @@
 
     <!-- Main Script with Firebase integration -->
     <script type="module" src="/UI/login/login.js"></script>
+
+    <script>
+        // Toggle between sign in and sign up on mobile
+        document.getElementById('goToSignUp').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('container').classList.add('right-panel-active');
+        });
+        
+        document.getElementById('goToSignIn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('container').classList.remove('right-panel-active');
+        });
+    </script>
 </body>
 </html>

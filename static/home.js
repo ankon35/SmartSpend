@@ -82,9 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
     totalExpenses = document.getElementById('totalExpenses');
     setupEventListeners();
     setupSidebar();
-    // Listen for auth state changes and update button
+    // Listen for auth state changes and update button and sidebar user info
     onAuthStateChanged(auth, (user) => {
         renderAuthButton(user);
+        updateSidebarUserInfo(user);
     });
     // Check authentication status after DOM elements are assigned
     checkAuthenticationStatus();
@@ -524,11 +525,21 @@ function updateSidebarUserInfo(user) {
     const sidebarUserName = document.getElementById('sidebarUserName');
     const sidebarUserEmail = document.getElementById('sidebarUserEmail');
     
-    if (sidebarUserName) {
-        sidebarUserName.textContent = user.displayName || user.email.split('@')[0];
+     if (sidebarUserName) {
+        // Display the user's displayName, or fallback to name from email, or 'User'
+        if (user.displayName && user.displayName.trim() !== '') {
+            sidebarUserName.textContent = user.displayName;
+        } else if (user.email) {
+            // Extract name before @ and capitalize first letter
+            const namePart = user.email.split('@')[0];
+            sidebarUserName.textContent = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        } else {
+            sidebarUserName.textContent = 'User';
+        }
     }
     
     if (sidebarUserEmail) {
+        // Display the user's email
         sidebarUserEmail.textContent = user.email;
     }
 }

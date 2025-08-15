@@ -277,4 +277,28 @@ input {
     .container.right-panel-active .sign-up-container {
         transform: none;
     }
+
+    /* Style for the mobile "Sign Up" button */
+    .mobile-signup-btn {
+        display: none;
+        background-color: #ff6b6b;
+        border: none;
+        padding: 12px 45px;
+        border-radius: 20px;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Display the "Sign Up" button only on mobile */
+    .mobile-signup-btn {
+        display: block;
+    }
 }
+
+

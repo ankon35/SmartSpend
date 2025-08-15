@@ -182,8 +182,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 password
             );
             
-            // Success - store additional user data
-            localStorage.setItem('userName', name);
+            // Now, update the display name in Firebase
+            const user = userCredential.user;
+            await user.updateProfile({
+                displayName: name
+            });
+            
+            // Success
             showSuccess('Account created successfully!', signupForm);
             
             // Switch to login form after successful signup
